@@ -84,11 +84,6 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
 gcloud organizations add-iam-policy-binding $ORG_ID \
   --member=$USER \
   --role="roles/iam.serviceAccountAdmin"
-
-# Role 6 - Service Account Key Admin
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="user:learn-gcp@subhamay.org" \
-  --role="roles/iam.serviceAccountKeyAdmin"
 ```
 
 ---
@@ -146,7 +141,7 @@ displayName: fld-platform-shared
 Store the folder ID:
 
 ```bash
-export FOLDER_ID="123456789012"
+FOLDER_ID="123456789012"
 ```
 
 ---
@@ -159,18 +154,20 @@ Create a project inside the **platform shared folder**.
 ```
 gcloud resource-manager folders list --organization=$ORG_ID --format="table(name,displayName)"
 
-export FOLDER_ID="123456789012"
+FOLDER_ID="123456789012"
 ```
 ```bash
-gcloud projects create prj-shared-github-cicd-$RANDOM \
+gcloud projects create prj-shared-github-cicd-06611 \
   --name="prj-shared-github-cicd" \
-  --folder=$FOLDER_ID. 
+  --folder=$FOLDER_ID
+
+
 ```
 
 Set the project for CLI usage:
 
 ```bash
-gcloud config set project prj-shared-github-cicd-<Random Number>
+gcloud config set project prj-shared-github-cicd-06902
 ```
 
 ---
@@ -209,15 +206,13 @@ gcloud iam service-accounts list
 Expected output:
 
 ```
-DISPLAY NAME: GitHub Terraform Service Account-16748)$ gcloud iam service-accounts list
-EMAIL: sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.com
-DISABLED: False
+sa-github-terraform@prj-shared-github-cicd-06902.iam.gserviceaccount.com
 ```
 
 Store the service account email:
 
 ```bash
-SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.com"
+SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-06902.iam.gserviceaccount.com"
 ```
 
 ---
@@ -232,9 +227,7 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
   --role="roles/resourcemanager.folderAdmin"
 ```
 
-### Policy binding:
-  
-- #### Project Creation
+### Project Creation
 
 ```bash
 gcloud organizations add-iam-policy-binding $ORG_ID \
@@ -242,7 +235,7 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
   --role="roles/resourcemanager.projectCreator"
 ```
 
-- #### Project IAM Administration
+### Project IAM Administration
 
 ```bash
 gcloud organizations add-iam-policy-binding $ORG_ID \
@@ -270,7 +263,7 @@ ACCOUNT_ID           NAME
 Store billing ID:
 
 ```bash
-export BILLING_ID="000ABC-123DEF-456GHI"
+BILLING_ID="000ABC-123DEF-456GHI"
 ```
 
 ---
@@ -323,14 +316,14 @@ gcloud resource-manager folders create \
 Save the folder ID:
 
 ```bash
-export TEST_FOLDER_ID="FOLDER_ID_FROM_OUTPUT"
+TEST_FOLDER_ID="FOLDER_ID_FROM_OUTPUT"
 ```
 
 ### Create Test Project
 
 ```bash
-gcloud projects create prj-test-bootstrap-$RANDOM \
-  --name="prj-test-bootstrap-$RANDOM" \
+gcloud projects create prj-test-bootstrap-001 \
+  --name="prj-test-bootstrap-001" \
   --folder=$TEST_FOLDER_ID \
   --impersonate-service-account=$SA_EMAIL
 ```
@@ -338,7 +331,7 @@ gcloud projects create prj-test-bootstrap-$RANDOM \
 ### Attach Billing
 
 ```bash
-gcloud billing projects link prj-test-bootstrap-25015 \
+gcloud billing projects link prj-test-bootstrap-001 \
   --billing-account=$BILLING_ID \
   --impersonate-service-account=$SA_EMAIL
 ```
@@ -356,9 +349,9 @@ This step allows **GitHub Actions to authenticate to GCP without service account
 Workload Identity Pools require the project number.
 
 ```bash
-export PROJECT_ID="prj-shared-github-cicd-16748"
+PROJECT_ID="prj-shared-github-cicd-06902"
 
-export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID \
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID \
   --format="value(projectNumber)")
 ```
 
@@ -367,17 +360,17 @@ export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID \
 ## 1. Set Required Variables
 
 ```bash
-export PROJECT_ID="prj-shared-github-cicd-16748"
-export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-export POOL_ID="github-actions"
-export PROVIDER_ID="github-provider"
-export SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.com"
+PROJECT_ID="prj-shared-github-cicd-06902"
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+POOL_ID="github-actions"
+PROVIDER_ID="github-provider"
+SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-06902.iam.gserviceaccount.com"
 ```
 
 Define the GitHub organizations you want to trust:
 
 ```bash
-export GITHUB_ORGS=("subhamay-bhattacharyya" "subhamay-bhattacharyya-tf" "subhamay-bhattacharyya-some-org")
+GITHUB_ORGS=("org1" "org2" "org3")
 ```
 
 ---
@@ -398,10 +391,8 @@ gcloud iam workload-identity-pools create github-actions \
 Replace with your GitHub repository.
 
 ```bash
-export GITHUB_ORG="YOUR_GITHUB_ORG"
-export GITHUB_REPO="YOUR_REPO"
-export TRUSTED_GITHUB_ORGS=("YOUR_GITHUB_ORG" "YOUR_SECOND_GITHUB_ORG")
-export ATTRIBUTE_CONDITION="assertion.repository_owner=='${TRUSTED_GITHUB_ORGS[0]}' || assertion.repository_owner=='${TRUSTED_GITHUB_ORGS[1]}'"
+GITHUB_ORG="YOUR_GITHUB_ORG"
+GITHUB_REPO="YOUR_REPO"
 ```
 
 ```bash
@@ -412,13 +403,13 @@ gcloud iam workload-identity-pools providers create-oidc github-provider \
   --display-name="GitHub Provider" \
   --issuer-uri="https://token.actions.githubusercontent.com" \
   --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner,attribute.ref=assertion.ref,attribute.actor=assertion.actor" \
-  --attribute-condition="$ATTRIBUTE_CONDITION"
+  --attribute-condition="assertion.repository_owner=='org1' || assertion.repository_owner=='org2'"
 ```
 
 Optional (recommended) restriction to main branch:
 
 ```
-assertion.repository=='ORG/REPO' && assertion.ref=='refs/heads/main'
+assertion.repository=="${GITHUB_ORG}/${GITHUB_REPO}" && assertion.ref=='refs/heads/main'
 ```
 
 ---
@@ -467,53 +458,6 @@ projects/123456789012/locations/global/workloadIdentityPools/github-actions/prov
 
 ---
 
-## Diagnostic Check (If Provider Is Not Found)
-
-If the provider describe command returns `NOT_FOUND`, run this diagnostic block:
-
-```bash
-gcloud config get-value accessibility/screen_reader
-gcloud config set accessibility/screen_reader false
-
-echo "Your active configuration is: [$(gcloud config configurations list --filter=is_active:true --format='value(name)')]"
-echo "ACTIVE ACCOUNT: $(gcloud config get-value account)"
-echo "ACTIVE PROJECT: $(gcloud config get-value project)"
-echo "PROJECT_ID VAR:  $PROJECT_ID"
-
-echo "---- Pools in project ----"
-gcloud iam workload-identity-pools list \
-  --project="$PROJECT_ID" \
-  --location=global \
-  --format="table(name,displayName,state)"
-
-echo "---- Providers in github-actions pool ----"
-gcloud iam workload-identity-pools providers list \
-  --project="$PROJECT_ID" \
-  --location=global \
-  --workload-identity-pool="github-actions" \
-  --format="table(name,displayName,state)"
-
-echo "---- Workload Identity Provider name ----"
-gcloud iam workload-identity-pools providers describe "$PROVIDER_ID" \
-  --project="$PROJECT_ID" \
-  --location=global \
-  --workload-identity-pool="$POOL_ID" \
-  --format="value(name)"
-
-echo "---- Projects (tabular) ----"
-gcloud projects list \
-  --format="table(projectId:label=PROJECT_ID,name:label=NAME,projectNumber:label=PROJECT_NUMBER,lifecycleState:label=LIFECYCLE_STATE)"
-
-echo "---- Folders in organization (tabular) ----"
-gcloud resource-manager folders list \
-  --organization="$ORG_ID" \
-  --format="table(name:label=FOLDER_ID,displayName:label=DISPLAY_NAME,parent:label=PARENT,state:label=STATE)"
-```
-
-If the pool exists but the provider list is empty, create the provider and then run `describe` again.
-
----
-
 # 15. Configure GitHub Actions Workflow
 
 Create a workflow:
@@ -555,6 +499,36 @@ jobs:
           gcloud auth list
           gcloud projects list
 ```
+
+---
+
+# 16. Validate Configuration and Apply Rectifications
+
+After completing the setup, run the provided shell script to verify that all required GCP resources and GitHub CI/CD variables are correctly configured. The script also performs minor rectifications automatically where possible — such as linking a missing billing account, enabling the Secret Manager API, or generating a new service account key.
+
+Make the script executable and run it, passing your project name as the argument:
+
+```bash
+chmod +x get_github_cicd_vars.sh
+./get_github_cicd_vars.sh <project-name>
+```
+
+> 💡 Example
+```bash
+./get_github_cicd_vars.sh prj-shared-github-cicd
+```
+
+The script will:
+
+- Confirm the active `gcloud` account and resolve any misconfigured project setting
+- Retrieve and display the Organization ID, Folder ID, Project ID and Project Number
+- Check and auto-link a billing account if one is missing
+- Verify the Terraform service account exists and retrieve its email and unique ID
+- Enable the Secret Manager API if not already enabled, and retrieve or generate the service account key
+- Retrieve Workload Identity Pool and Provider details if configured
+- Output the GitHub Actions **Secrets** and **Variables** required for your CI/CD workflows
+
+Review the `[WARNING]` messages in the output for any items that could not be automatically resolved and need manual intervention.
 
 ---
 
