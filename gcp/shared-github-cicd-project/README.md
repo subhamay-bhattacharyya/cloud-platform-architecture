@@ -53,7 +53,42 @@ Before proceeding with organization bootstrap, complete the following identity p
 
 ---
 
-# 3. Retrieve Organization ID
+# 3. Grant Bootstrap Roles to the Default User
+
+After signing in, grant bootstrap permissions to your default user.
+
+```bash
+USER="user:$(gcloud config get-value account)"
+
+# Role 1 - Organization Administrator
+gcloud organizations add-iam-policy-binding $ORG_ID \
+  --member=$USER \
+  --role="roles/resourcemanager.organizationAdmin"
+
+# Role 2 - Folder Creator
+gcloud organizations add-iam-policy-binding $ORG_ID \
+  --member=$USER \
+  --role="roles/resourcemanager.folderCreator"
+
+# Role 3 - Project Creator
+gcloud organizations add-iam-policy-binding $ORG_ID \
+  --member=$USER \
+  --role="roles/resourcemanager.projectCreator"
+
+# Role 4 - Billing User
+gcloud organizations add-iam-policy-binding $ORG_ID \
+  --member=$USER \
+  --role="roles/billing.user"
+
+# Role 5 - Service Account Admin
+gcloud organizations add-iam-policy-binding $ORG_ID \
+  --member=$USER \
+  --role="roles/iam.serviceAccountAdmin"
+```
+
+---
+
+# 4. Retrieve Organization ID
 
 Authenticate and retrieve the organization ID.
 
@@ -72,12 +107,18 @@ subhamay.cloud      123456789012
 Store it:
 
 ```bash
-ORG_ID="123456789012"
+export ORG_ID=<ORG_ID>
+export USER=<USER_ID>
+```
+> 💡  Example 
+```bash
+export ORG_ID=464247778313
+export USER=user:learn-gcp@subhamay.org
 ```
 
 ---
 
-# 4. Create the Platform Shared Folder
+# 5. Create the Platform Shared Folder
 
 Create a folder to host shared platform services.
 
@@ -105,14 +146,22 @@ FOLDER_ID="123456789012"
 
 ---
 
-# 5. Create the CI/CD Identity Project
+# 6. Create the CI/CD Identity Project
 
 Create a project inside the **platform shared folder**.
 
+> 💡 Tip To retrieve the folder  id
+```
+gcloud resource-manager folders list --organization=$ORG_ID --format="table(name,displayName)"
+
+FOLDER_ID="123456789012"
+```
 ```bash
-gcloud projects create prj-shared-github-cicd-06902 \
+gcloud projects create prj-shared-github-cicd-06611 \
   --name="prj-shared-github-cicd" \
   --folder=$FOLDER_ID
+
+
 ```
 
 Set the project for CLI usage:
@@ -123,7 +172,7 @@ gcloud config set project prj-shared-github-cicd-06902
 
 ---
 
-# 6. Enable Required APIs
+# 7. Enable Required APIs
 
 Enable APIs required for IAM, federation, and automation.
 
@@ -138,7 +187,7 @@ gcloud services enable \
 
 ---
 
-# 7. Create Terraform Service Account
+# 8. Create Terraform Service Account
 
 Create the service account used by Terraform automation.
 
@@ -168,7 +217,7 @@ SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-06902.iam.gserviceaccount.c
 
 ---
 
-# 8. Grant Organization Roles to the Service Account
+# 9. Grant Organization Roles to the Service Account
 
 ### Folder Administration
 
@@ -196,7 +245,7 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
 
 ---
 
-# 9. Retrieve Billing Account
+# 10. Retrieve Billing Account
 
 Projects require a billing account during creation.
 
@@ -219,7 +268,7 @@ BILLING_ID="000ABC-123DEF-456GHI"
 
 ---
 
-# 10. Grant Billing Permission
+# 11. Grant Billing Permission
 
 Allow Terraform to attach billing accounts to new projects.
 
@@ -231,7 +280,7 @@ gcloud billing accounts add-iam-policy-binding $BILLING_ID \
 
 ---
 
-# 11. Verify IAM Permissions
+# 12. Verify IAM Permissions
 
 Verify organization roles:
 
@@ -253,7 +302,7 @@ gcloud billing accounts get-iam-policy $BILLING_ID \
 
 ---
 
-# 12. Test Terraform Service Account Permissions
+# 13. Test Terraform Service Account Permissions
 
 ### Create Test Folder
 
@@ -289,7 +338,7 @@ gcloud billing projects link prj-test-bootstrap-001 \
 
 ---
 
-# 13. Configure GitHub OIDC Authentication (Workload Identity Federation)
+# 14. Configure GitHub OIDC Authentication (Workload Identity Federation)
 
 This step allows **GitHub Actions to authenticate to GCP without service account keys**.
 
@@ -409,7 +458,7 @@ projects/123456789012/locations/global/workloadIdentityPools/github-actions/prov
 
 ---
 
-# 14. Configure GitHub Actions Workflow
+# 15. Configure GitHub Actions Workflow
 
 Create a workflow:
 
