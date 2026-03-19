@@ -280,27 +280,39 @@ export BILLING_ID="000ABC-123DEF-456GHI"
 
 Allow Terraform to attach billing accounts to new projects.
 
-## Enable Cloud Billing API on the CI/CD project first
+## Step 11.1 — Enable Cloud Billing API on the CI/CD project
 ```bash
 gcloud services enable cloudbilling.googleapis.com \
   --project=$PROJECT_ID
 ```
 
-## Grant billing user role on the billing account
+## Step 11.2 — Grant Billing User role on the Billing Account
 ```bash
 gcloud billing accounts add-iam-policy-binding $BILLING_ID \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/billing.user"
 ```
 
-## Grant Service Usage Admin on the CI/CD project
+## Step 11.3 — Grant Service Usage Admin on the CI/CD project
 ```bash
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/serviceusage.serviceUsageAdmin"
 ```
 
----
+## Step 11.4 — Verify Billing Role on the Billing Account
+```bash
+gcloud billing accounts get-iam-policy $BILLING_ID \
+  --flatten="bindings[].members" \
+  --filter="bindings.members:$SA_EMAIL" \
+  --format="table(bindings.role)"
+```
+
+Expected output:
+```
+ROLE
+roles/billing.user
+```
 
 # 12. Verify IAM Permissions
 
