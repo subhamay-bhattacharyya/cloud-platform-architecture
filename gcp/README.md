@@ -141,7 +141,7 @@ displayName: fld-platform-shared
 Store the folder ID:
 
 ```bash
-FOLDER_ID="123456789012"
+export FOLDER_ID="123456789012"
 ```
 
 ---
@@ -157,17 +157,15 @@ gcloud resource-manager folders list --organization=$ORG_ID --format="table(name
 export FOLDER_ID="123456789012"
 ```
 ```bash
-gcloud projects create prj-shared-github-cicd-06611 \
+gcloud projects create prj-shared-github-cicd-$RANDOM \
   --name="prj-shared-github-cicd" \
-  --folder=$FOLDER_ID
-
-
+  --folder=$FOLDER_ID. 
 ```
 
 Set the project for CLI usage:
 
 ```bash
-gcloud config set project prj-shared-github-cicd-06902
+gcloud config set project prj-shared-github-cicd-<Random Number>
 ```
 
 ---
@@ -206,13 +204,15 @@ gcloud iam service-accounts list
 Expected output:
 
 ```
-sa-github-terraform@prj-shared-github-cicd-06902.iam.gserviceaccount.com
+DISPLAY NAME: GitHub Terraform Service Account-16748)$ gcloud iam service-accounts list
+EMAIL: sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.com
+DISABLED: False
 ```
 
 Store the service account email:
 
 ```bash
-SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-06902.iam.gserviceaccount.com"
+SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.com"
 ```
 
 ---
@@ -227,7 +227,9 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
   --role="roles/resourcemanager.folderAdmin"
 ```
 
-### Project Creation
+### Policy binding:
+  
+- #### Project Creation
 
 ```bash
 gcloud organizations add-iam-policy-binding $ORG_ID \
@@ -235,7 +237,7 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
   --role="roles/resourcemanager.projectCreator"
 ```
 
-### Project IAM Administration
+- #### Project IAM Administration
 
 ```bash
 gcloud organizations add-iam-policy-binding $ORG_ID \
@@ -263,7 +265,7 @@ ACCOUNT_ID           NAME
 Store billing ID:
 
 ```bash
-BILLING_ID="000ABC-123DEF-456GHI"
+export BILLING_ID="000ABC-123DEF-456GHI"
 ```
 
 ---
