@@ -164,7 +164,7 @@ export FOLDER_ID="123456789012"
 ```bash
 gcloud projects create prj-shared-github-cicd-$RANDOM \
   --name="prj-shared-github-cicd" \
-  --folder=$FOLDER_ID. 
+  --folder=$FOLDER_ID
 ```
 
 Set the project for CLI usage:
@@ -185,7 +185,8 @@ gcloud services enable \
   cloudresourcemanager.googleapis.com \
   serviceusage.googleapis.com \
   iamcredentials.googleapis.com \
-  sts.googleapis.com
+  sts.googleapis.com \
+  cloudbilling.googleapis.com
 ```
 
 ---
@@ -279,10 +280,24 @@ export BILLING_ID="000ABC-123DEF-456GHI"
 
 Allow Terraform to attach billing accounts to new projects.
 
+## Enable Cloud Billing API on the CI/CD project first
+```bash
+gcloud services enable cloudbilling.googleapis.com \
+  --project=$PROJECT_ID
+```
+
+## Grant billing user role on the billing account
 ```bash
 gcloud billing accounts add-iam-policy-binding $BILLING_ID \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/billing.user"
+```
+
+## Grant Service Usage Admin on the CI/CD project
+```bash
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:$SA_EMAIL" \
+  --role="roles/serviceusage.serviceUsageAdmin"
 ```
 
 ---
