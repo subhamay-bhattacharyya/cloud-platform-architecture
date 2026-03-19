@@ -186,7 +186,8 @@ gcloud services enable \
   serviceusage.googleapis.com \
   iamcredentials.googleapis.com \
   sts.googleapis.com \
-  cloudbilling.googleapis.com
+  cloudbilling.googleapis.com \
+  billingbudgets.googleapis.com
 ```
 
 ---
