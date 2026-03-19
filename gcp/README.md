@@ -154,7 +154,7 @@ Create a project inside the **platform shared folder**.
 ```
 gcloud resource-manager folders list --organization=$ORG_ID --format="table(name,displayName)"
 
-FOLDER_ID="123456789012"
+export FOLDER_ID="123456789012"
 ```
 ```bash
 gcloud projects create prj-shared-github-cicd-06611 \
