@@ -318,14 +318,14 @@ gcloud resource-manager folders create \
 Save the folder ID:
 
 ```bash
-TEST_FOLDER_ID="FOLDER_ID_FROM_OUTPUT"
+export TEST_FOLDER_ID="FOLDER_ID_FROM_OUTPUT"
 ```
 
 ### Create Test Project
 
 ```bash
-gcloud projects create prj-test-bootstrap-001 \
-  --name="prj-test-bootstrap-001" \
+gcloud projects create prj-test-bootstrap-$RANDOM \
+  --name="prj-test-bootstrap-$RANDOM" \
   --folder=$TEST_FOLDER_ID \
   --impersonate-service-account=$SA_EMAIL
 ```
@@ -333,7 +333,7 @@ gcloud projects create prj-test-bootstrap-001 \
 ### Attach Billing
 
 ```bash
-gcloud billing projects link prj-test-bootstrap-001 \
+gcloud billing projects link prj-test-bootstrap-25015 \
   --billing-account=$BILLING_ID \
   --impersonate-service-account=$SA_EMAIL
 ```
