@@ -266,13 +266,15 @@ Example output:
 
 ```
 ACCOUNT_ID           NAME
-000ABC-123DEF-456GHI My Billing Account
+000ABC-123DEF-456GHI My Billing Account One
+111JKL-222MNO-333PQR My Billing Account Two
 ```
 
 Store billing ID:
 
 ```bash
-export BILLING_ID="000ABC-123DEF-456GHI"
+export BILLING_ID_1="000ABC-123DEF-456GHI"
+export BILLING_ID_2="111JKL-222MNO-333PQR"
 ```
 
 ---
@@ -287,23 +289,38 @@ gcloud services enable cloudbilling.googleapis.com \
   --project=$PROJECT_ID
 ```
 
-## Step 11.2 — Grant Billing User role on the Billing Account
+## Step 11.2 — Grant Billing User role on Billing Account Number One and Two
 ```bash
-gcloud billing accounts add-iam-policy-binding $BILLING_ID \
+gcloud billing accounts add-iam-policy-binding $BILLING_ID_1 \
+  --member="serviceAccount:$SA_EMAIL" \
+  --role="roles/billing.user"
+
+gcloud billing accounts add-iam-policy-binding $BILLING_ID_2 \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/billing.user"
 ```
 
-## Step 11.3 — Grant Service Usage Admin on the CI/CD project
+## Step 11.3 — Grant Billing Costs Manager role on Billing Account Number One and Two
 ```bash
-gcloud projects add-iam-policy-binding $PROJECT_ID \
+gcloud billing accounts add-iam-policy-binding $BILLING_ID_1 \
   --member="serviceAccount:$SA_EMAIL" \
-  --role="roles/serviceusage.serviceUsageAdmin"
+  --role="roles/billing.costsManager"
+
+gcloud billing accounts add-iam-policy-binding $BILLING_ID_2 \
+  --member="serviceAccount:$SA_EMAIL" \
+  --role="roles/billing.costsManager"
 ```
 
-## Step 11.4 — Verify Billing Role on the Billing Account
+## Step 11.4 — Verify Billing Role on Billing Account Number One and Two
 ```bash
-gcloud billing accounts get-iam-policy $BILLING_ID \
+gcloud billing accounts get-iam-policy $BILLING_ID_1 \
+  --flatten="bindings[].members" \
+  --filter="bindings.members:$SA_EMAIL" \
+  --format="table(bindings.role)"
+```
+
+```bash
+gcloud billing accounts get-iam-policy $BILLING_ID_2 \
   --flatten="bindings[].members" \
   --filter="bindings.members:$SA_EMAIL" \
   --format="table(bindings.role)"
@@ -313,7 +330,9 @@ Expected output:
 ```
 ROLE
 roles/billing.user
+roles/billing.costsManager
 ```
+
 
 # 12. Verify IAM Permissions
 
@@ -329,7 +348,12 @@ gcloud organizations get-iam-policy $ORG_ID \
 Verify billing permissions:
 
 ```bash
-gcloud billing accounts get-iam-policy $BILLING_ID \
+gcloud billing accounts get-iam-policy $BILLING_ID_1 \
+  --flatten="bindings[].members" \
+  --filter="bindings.members:$SA_EMAIL" \
+  --format="table(bindings.role)"
+
+gcloud billing accounts get-iam-policy $BILLING_ID_2 \
   --flatten="bindings[].members" \
   --filter="bindings.members:$SA_EMAIL" \
   --format="table(bindings.role)"
@@ -367,7 +391,7 @@ gcloud projects create prj-test-bootstrap-$RANDOM \
 
 ```bash
 gcloud billing projects link prj-test-bootstrap-25015 \
-  --billing-account=$BILLING_ID \
+  --billing-account=$BILLING_ID_1 \
   --impersonate-service-account=$SA_EMAIL
 ```
 
