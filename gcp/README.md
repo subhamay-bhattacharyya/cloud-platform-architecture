@@ -7,11 +7,11 @@ The service account will later be used by **GitHub Actions via Workload Identity
 
 ---
 
-# 1. GCP Resource Hierarchy
+## 1. GCP Resource Hierarchy
 
 Create the following structure in your organization:
 
-```
+```text
 Organization
 │
 ├── fld-platform-shared
@@ -28,7 +28,7 @@ Organization
 ### Purpose
 
 | Component | Purpose |
-|---|---|
+| --- | --- |
 | **fld-platform-shared** | Contains shared platform infrastructure |
 | **prj-shared-github-cicd** | Dedicated project for CI/CD identities and automation |
 | **sa-github-terraform** | Terraform automation service account |
@@ -42,7 +42,7 @@ This project **does not host workloads**. It is used only for:
 
 ---
 
-# 2. Complete Prerequisite Identity Setup
+## 2. Complete Prerequisite Identity Setup
 
 Before proceeding with organization bootstrap, complete the following identity prerequisites:
 
@@ -53,7 +53,7 @@ Before proceeding with organization bootstrap, complete the following identity p
 
 ---
 
-# 3. Grant Bootstrap Roles to the Default User
+## 3. Grant Bootstrap Roles to the Default User
 
 After signing in, grant bootstrap permissions to your default user.
 
@@ -93,7 +93,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 ---
 
-# 4. Retrieve Organization ID
+## 4. Retrieve Organization ID
 
 Authenticate and retrieve the organization ID.
 
@@ -104,7 +104,7 @@ gcloud organizations list
 
 Example output:
 
-```
+```text
 DISPLAY_NAME        ID
 subhamay.cloud      123456789012
 ```
@@ -115,7 +115,9 @@ Store it:
 export ORG_ID=<ORG_ID>
 export USER=<USER_ID>
 ```
-> 💡  Example 
+
+> 💡  Example:
+
 ```bash
 export ORG_ID=464247778313
 export USER=user:learn-gcp@subhamay.org
@@ -123,7 +125,7 @@ export USER=user:learn-gcp@subhamay.org
 
 ---
 
-# 5. Create the Platform Shared Folder
+## 5. Create the Platform Shared Folder
 
 Create a folder to host shared platform services.
 
@@ -138,7 +140,7 @@ gcloud resource-manager folders create \
 
 Example output:
 
-```
+```text
 name: folders/123456789012
 displayName: fld-platform-shared
 ```
@@ -151,16 +153,18 @@ export FOLDER_ID="123456789012"
 
 ---
 
-# 6. Create the CI/CD Identity Project
+## 6. Create the CI/CD Identity Project
 
 Create a project inside the **platform shared folder**.
 
 > 💡 Tip To retrieve the folder  id
-```
+
+```bash
 gcloud resource-manager folders list --organization=$ORG_ID --format="table(name,displayName)"
 
 export FOLDER_ID="123456789012"
 ```
+
 ```bash
 gcloud projects create prj-shared-github-cicd-$RANDOM \
   --name="prj-shared-github-cicd" \
@@ -175,7 +179,7 @@ gcloud config set project prj-shared-github-cicd-<Random Number>
 
 ---
 
-# 7. Enable Required APIs
+## 7. Enable Required APIs
 
 Enable APIs required for IAM, federation, and automation.
 
@@ -192,7 +196,7 @@ gcloud services enable \
 
 ---
 
-# 8. Create Terraform Service Account
+## 8. Create Terraform Service Account
 
 Create the service account used by Terraform automation.
 
@@ -210,7 +214,7 @@ gcloud iam service-accounts list
 
 Expected output:
 
-```
+```bash
 DISPLAY NAME: GitHub Terraform Service Account-16748)$ gcloud iam service-accounts list
 EMAIL: sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.com
 DISABLED: False
@@ -224,7 +228,7 @@ SA_EMAIL="sa-github-terraform@prj-shared-github-cicd-16748.iam.gserviceaccount.c
 
 ---
 
-# 9. Grant Organization Roles to the Service Account
+## 9. Grant Organization Roles to the Service Account
 
 ### Folder Administration
 
@@ -234,7 +238,7 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
   --role="roles/resourcemanager.folderAdmin"
 ```
 
-### Policy binding:
+### Policy binding
   
 - #### Project Creation
 
@@ -254,7 +258,7 @@ gcloud organizations add-iam-policy-binding $ORG_ID \
 
 ---
 
-# 10. Retrieve Billing Account
+## 10. Retrieve Billing Account
 
 Projects require a billing account during creation.
 
@@ -264,7 +268,7 @@ gcloud billing accounts list
 
 Example output:
 
-```
+```text
 ACCOUNT_ID           NAME
 000ABC-123DEF-456GHI My Billing Account One
 111JKL-222MNO-333PQR My Billing Account Two
@@ -279,17 +283,19 @@ export BILLING_ID_2="111JKL-222MNO-333PQR"
 
 ---
 
-# 11. Grant Billing Permission
+## 11. Grant Billing Permission
 
 Allow Terraform to attach billing accounts to new projects.
 
 ## Step 11.1 — Enable Cloud Billing API on the CI/CD project
+
 ```bash
 gcloud services enable cloudbilling.googleapis.com \
   --project=$PROJECT_ID
 ```
 
 ## Step 11.2 — Grant Billing User role on Billing Account Number One and Two
+
 ```bash
 gcloud billing accounts add-iam-policy-binding $BILLING_ID_1 \
   --member="serviceAccount:$SA_EMAIL" \
@@ -301,6 +307,7 @@ gcloud billing accounts add-iam-policy-binding $BILLING_ID_2 \
 ```
 
 ## Step 11.3 — Grant Billing Costs Manager role on Billing Account Number One and Two
+
 ```bash
 gcloud billing accounts add-iam-policy-binding $BILLING_ID_1 \
   --member="serviceAccount:$SA_EMAIL" \
@@ -312,6 +319,7 @@ gcloud billing accounts add-iam-policy-binding $BILLING_ID_2 \
 ```
 
 ## Step 11.4 — Verify Billing Role on Billing Account Number One and Two
+
 ```bash
 gcloud billing accounts get-iam-policy $BILLING_ID_1 \
   --flatten="bindings[].members" \
@@ -327,14 +335,14 @@ gcloud billing accounts get-iam-policy $BILLING_ID_2 \
 ```
 
 Expected output:
-```
+
+```bach
 ROLE
 roles/billing.user
 roles/billing.costsManager
 ```
 
-
-# 12. Verify IAM Permissions
+## 12. Verify IAM Permissions
 
 Verify organization roles:
 
@@ -361,7 +369,7 @@ gcloud billing accounts get-iam-policy $BILLING_ID_2 \
 
 ---
 
-# 13. Test Terraform Service Account Permissions
+## 13. Test Terraform Service Account Permissions
 
 ### Create Test Folder
 
@@ -397,7 +405,7 @@ gcloud billing projects link prj-test-bootstrap-25015 \
 
 ---
 
-# 14. Configure GitHub OIDC Authentication (Workload Identity Federation)
+## 14. Configure GitHub OIDC Authentication (Workload Identity Federation)
 
 This step allows **GitHub Actions to authenticate to GCP without service account keys**.
 
@@ -469,7 +477,7 @@ gcloud iam workload-identity-pools providers create-oidc github-provider \
 
 Optional (recommended) restriction to main branch:
 
-```
+```bash
 assertion.repository=='ORG/REPO' && assertion.ref=='refs/heads/main'
 ```
 
@@ -513,7 +521,7 @@ gcloud iam workload-identity-pools providers describe github-provider \
 
 Example output:
 
-```
+```text
 projects/123456789012/locations/global/workloadIdentityPools/github-actions/providers/github-provider
 ```
 
@@ -566,11 +574,11 @@ If the pool exists but the provider list is empty, create the provider and then 
 
 ---
 
-# 15. Configure GitHub Actions Workflow
+## 15. Configure GitHub Actions Workflow
 
 Create a workflow:
 
-```
+```text
 .github/workflows/terraform.yml
 ```
 
@@ -610,10 +618,10 @@ jobs:
 
 ---
 
-# Required Roles Summary
+## Required Roles Summary
 
 | Scope | Role | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | Organization | `roles/resourcemanager.folderAdmin` | Create and manage folders |
 | Organization | `roles/resourcemanager.projectCreator` | Create projects |
 | Organization | `roles/resourcemanager.projectIamAdmin` | Assign IAM roles on projects |
@@ -622,7 +630,7 @@ jobs:
 
 ---
 
-# Final Result
+## Final Result
 
 After completing this setup:
 
