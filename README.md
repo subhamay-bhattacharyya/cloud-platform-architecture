@@ -12,6 +12,7 @@ are deployed.
 | --- | --- | --- |
 | Google Cloud Platform | Organization hierarchy, shared CI/CD project, Workload Identity Federation for GitHub Actions, and the IAM roles required for Terraform automation. | [gcp/README.md](./gcp/README.md) |
 | Snowflake | Custom role provisioning, GitHub Actions service user with key-pair authentication, and the analyst read-only role for the Snowflake Lakehouse project. | [snowflake/SNOWFLAKE_ONBOARDING.md](./snowflake/SNOWFLAKE_ONBOARDING.md) |
+| HCP Terraform | HCP Terraform organization and workspace setup, GitHub OAuth app for VCS integration, and the GitHub Actions secrets used by Terraform workflows. | [hcp-cloud/README.md](./hcp-cloud/README.md) |
 
 ## Repository Layout
 
@@ -20,6 +21,8 @@ are deployed.
 ├── gcp/                         # GCP org + CI/CD bootstrap
 │   ├── README.md
 │   └── get_github_cicd_vars.sh
+├── hcp-cloud/                   # HCP Terraform + GitHub OAuth bootstrap
+│   └── README.md
 └── snowflake/                   # Snowflake roles + service user bootstrap
     ├── SNOWFLAKE_ONBOARDING.md
     └── snowflake-custom-roles.sql
